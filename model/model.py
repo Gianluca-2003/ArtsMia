@@ -1,3 +1,5 @@
+import copy
+
 import networkx as nx
 
 from database.DAO import DAO
@@ -11,6 +13,48 @@ class Model:
         for v in self.nodes:
             self.idMap[v.object_id] = v
         self._allEdges = None
+        self._bestPath = []
+        self._bestCost = 0
+
+
+    def getOptPath(self,source,lun):
+        self._bestPath = []
+        self._bestCost = 0
+
+        parziale = [source]
+
+        for n in nx.neighbors(self._graph,source):
+            if parziale[0].classification == n.classification:
+                parziale.append(n)
+                self.ricorsione(parziale, lun)
+                parziale.pop()
+
+        return self._bestPath, self._bestCost
+
+
+    def ricorsione(self,parziale,lun):
+        if len(parziale) == lun:# parziale ha la lunghezza desiderata--> devo uscire
+            if self.costo(parziale) > self._bestCost:
+                self._bestCost = self.costo(parziale)
+                self._bestPath = copy.deepcopy(parziale)
+            return
+        #parziale puo ancora ammetter altri nodi
+        for n in self._graph.neighbors(parziale[-1]):
+            if parziale[-1].classification == n.classification and n not in parziale:
+                parziale.append(n)
+                self.ricorsione(parziale, lun)
+                parziale.pop()
+
+
+    def costo(self, listObjects):
+        totCost = 0
+        for i in range(0, len(listObjects)-1):
+            totCost += self._graph[listObjects[i]][listObjects[i+1]]["weight"]
+        return totCost
+
+
+
+
 
 
     def buildGraph(self):
@@ -78,3 +122,4 @@ class Model:
 
     def getObjectFromId(self,id):
         return self.idMap[id]
+

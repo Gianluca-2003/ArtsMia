@@ -31,4 +31,4 @@ class ArtObject:
     '''
 
     def __str__(self):
-        return f"{self.title} - {self.dated}"
+        return f"{self.title} - {self.classification}"
